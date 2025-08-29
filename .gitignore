@@ -1,0 +1,17 @@
+# node
+node_modules/
+npm-debug.log*
+
+# environment / secrets
+.env
+.env.*
+!.env.example
+
+# pm2 / logs
+.pm2/
+logs/
+*.log
+
+# OS noise
+.DS_Store
+Thumbs.db
