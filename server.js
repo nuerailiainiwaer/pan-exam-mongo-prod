@@ -11,11 +11,30 @@ var PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
+const isProd = process.env.NODE_ENV === 'production';
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+
+// Behind Render’s proxy so secure cookies work
+app.set('trust proxy', 1);
+
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'change_me',
+    name: 'sid',
+    secret: process.env.SESSION_SECRET, // set this in Render dashboard
     resave: false,
     saveUninitialized: false,
-    cookie: { httpOnly: true, sameSite: 'lax' }
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI, // you already use this for Mongoose
+        dbName: 'panexamv9',
+        collectionName: 'sessions',
+        ttl: 60 * 60 * 24 * 7, // 7 days
+    }),
+    cookie: {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProd, // true on Render (HTTPS)
+        maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
+    }
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 
